@@ -30,6 +30,8 @@ angular.module('albums', ['ngResource', 'ui.bootstrap']).
 function AlbumsController($scope, $modal, Albums, Album, Status) {
     function list() {
         $scope.albums = Albums.query();
+        newrelic.addPageAction('RefreshedTheList');
+
     }
 
     function clone (obj) {
@@ -40,6 +42,7 @@ function AlbumsController($scope, $modal, Albums, Album, Status) {
         Albums.save(album,
             function () {
                 Status.success("Album saved");
+                newrelic.addPageAction('AddedAnAlbum',{Album: JSON.stringify(album)});
                 list();
             },
             function (result) {
@@ -83,12 +86,15 @@ function AlbumsController($scope, $modal, Albums, Album, Status) {
 
         updateModal.result.then(function (album) {
             saveAlbum(album);
+            newrelic.addPageAction('UpdatedAnAlbum',{Album: JSON.stringify(album)});
+
         });
     };
 
     $scope.deleteAlbum = function (album) {
         Album.delete({id: album.id},
             function () {
+                newrelic.addPageAction('DeletedAnAlbum',{Album: JSON.stringify(album)});
                 Status.success("Album deleted");
                 list();
             },
@@ -100,6 +106,8 @@ function AlbumsController($scope, $modal, Albums, Album, Status) {
 
     $scope.setAlbumsView = function (viewName) {
         $scope.albumsView = "assets/templates/" + viewName + ".html";
+        newrelic.addPageAction('ViewChanged',{View: viewName});
+
     };
 
     $scope.init = function() {
@@ -154,7 +162,6 @@ function AlbumEditorController($scope, Albums, Status, EditorStatus) {
                 Status.error("Error saving album: " + result.status);
             }
         );
-
         $scope.disableEditor();
     };
 
